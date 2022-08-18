@@ -5,7 +5,7 @@
 # Usage: /path/to/GenerateEncryptedString.sh
 
 # Generate the encrypted string.
-function GenerateEncryptedString() {
+GenerateEncryptedString() {
 	local plainTextPass=""
 	read -sp "Enter your password here: " plainTextPass
 	local STRING="${plainTextPass}"
@@ -17,7 +17,7 @@ function GenerateEncryptedString() {
 }
 
 # Optionally checks to make sure that the decryption works correctly.
-function DecryptString() {
+DecryptString() {
 	local ENCRYPTED=""
 	local SALT=""
 	local K=""
@@ -34,7 +34,8 @@ function DecryptString() {
 	fi
 }
 
-GenerateEncryptedString
-DecryptString
-
-exit 0
+# Call main function
+main(){
+	GenerateEncryptedString
+	DecryptString
+}

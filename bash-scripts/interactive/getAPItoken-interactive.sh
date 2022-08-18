@@ -16,7 +16,3 @@ curl -L $jamfProURL/JSSResource/computers --header 'Accept: application/xml' --h
 
 # Example usage of this token with classic/universal API and xpath: 
 curl -L $jamfProURL/JSSResource/computers --header 'Accept: application/xml' --header "Authorization: Basic ${apiBasicPass}" | xmllint --format --xpath '//computer/name/text()' -
-
-# | xmllint --format -
-
-# https://a300-11a.pro.jamf.training

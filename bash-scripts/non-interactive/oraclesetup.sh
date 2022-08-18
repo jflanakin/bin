@@ -2,8 +2,7 @@
 # ***WARNING DANGER - this changes the SSH port from 22 to 6621***
 
 # Replace $YOURUSER with your username. 
-# Setting that value as a variable has had... mixed results, so just suffer
-#   editing this script once you download it to change the name.
+# Setting that value as a variable has had... mixed results, so just suffer through editing this script once you download it to change the name.
 
 # Verify user is running as root or with sudo
 if [ "$EUID" -ne 0 ]

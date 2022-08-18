@@ -5,7 +5,7 @@ This is a script meant to be deployed with Jamf Pro to run API calls on
   computers remotely. This is just the first part of the script to acquire a
   bearer token to user API calls further in the script.
 
-Usage:
+How to use:
 1. Generate an encrypted password with the GenerateEncryptedString.sh script
 2. Create a script in Jamf Pro, then copy/paste this script and add any API calls 
   you desire.
