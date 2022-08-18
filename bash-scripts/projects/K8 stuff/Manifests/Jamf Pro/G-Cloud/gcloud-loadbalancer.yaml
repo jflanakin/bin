@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tomcat
+  namespace: jamf-pro
+  labels:
+    app: jamf-pro
+spec:
+  type: LoadBalancer
+  ports:
+  - name: "https"
+    port: 31621
+    targetPort: 8080
+    protocol: TCP
+  selector:
+    app: jamf-pro

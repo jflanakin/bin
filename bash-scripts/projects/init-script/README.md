@@ -1,0 +1,2 @@
+# Interactive Server Configuration
+This project is an interactive script which I'm using to get back into writing better and more complicated scripts. It does not need to be this complicated, however I'm using it to learn. 

@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+# This describes the version of the Kubernetes API I'm using to create this object
+# This API group includes functionality related to running applications on Kubernetes, like Deployments.
+kind: Deployment
+# What kind of object you want to create
+metadata:
+# Data that helps uniquely identify the object, including a name string, UID, and optional namespace
+  name: jamf-pro
+  namespace: jamf-pro
+  labels:
+  # This labels the deployment
+    app: jamf-pro
+spec:
+# What state you desire for the object
+  replicas: 1
+  # Number of replicated pods created by the deployment
+  selector:
+    matchLabels:
+    # This tells the deployment what pods it will apply to
+      app: jamf-pro
+  strategy:
+  # recreate pod on failure, deletion, or reboot
+    type: Recreate
+  template:
+    metadata:
+      labels:
+      # This labels the pod that the deployment is deploying
+        app: jamf-pro
+    spec:
+    # Configure the container, environment variables, and options
+      containers:
+        - env:
+            # Change to your MySQL requirenments
+            - name: DATABASE_HOST
+              value: "database.domain.net"
+            - name: DATABASE_NAME
+              value: "jamfsoftware"
+            - name: DATABASE_USERNAME
+              value: "jamfsoftware"
+            - name: DATABASE_PASSWORD
+              value: "changeit"
+            - name: DATABASE_PORT
+              value: "3306"
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          name: jamf-pro
+          image: jamf/jamfpro:latest
+          # This image requires that a ROOT.war be saved on a worker node
+          #   and that a hostPath is configured
+          ports:
+          # Defines the port on which the app can be reached on inside the container
+            - containerPort: 8080
+              name: tomcat-web-svc
+          resources:
+          # set resource limits as needed
+            requests:
+              memory: "1000Mi"
+              cpu: "1000m"
+            limits:
+              memory: "2000Mi"
+              cpu: "2000m"
+          volumeMounts:
+          # This is where the ROOT.war is mounted inside the container
+            - name: webapp
+              mountPath: /data/ROOT.war
+      restartPolicy: Always
+      volumes:
+        - name: webapp
+          hostPath:
+            # Change to where you have your ROOT.war saved. This must exist on
+            #   every worker node.
+            path: /data/ROOT.war

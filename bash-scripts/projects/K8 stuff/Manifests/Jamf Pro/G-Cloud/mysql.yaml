@@ -1,0 +1,74 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-volume
+  namespace: jamf-pro
+spec:
+  storageClassName: raccoon
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+  namespace: jamf-pro
+  labels:
+    app: jamf-pro
+    db: mysql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      db: mysql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        db: mysql
+    spec:
+      containers:
+      - image: mysql:5.7
+        name: mysql
+        args:
+          - "--ignore-db-dir=lost+found"
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: password
+        - name: "MYSQL_DATABASE"
+          value: "jamfsoftware"
+        - name: "MYSQL_USER"
+          value: "jamfsoftware"
+        - name: "MYSQL_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: password
+        ports:
+        - containerPort: 3306
+          name: mysql
+        volumeMounts:
+        - name: mysql-db
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mysql-db
+        persistentVolumeClaim:
+          claimName: mysql-volume
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+  namespace: jamf-pro
+spec:
+  ports:
+  - port: 3306
+  selector:
+    db: mysql

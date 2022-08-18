@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: jamf-pro
+  labels:
+    app: jamf-pro
+    db: mysql
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: jamf-pro
+  namespace: jamf-pro
+spec:
+  hard:
+    requests.cpu: "0.5"
+    requests.memory: 500Mi
+    limits.cpu: "2"
+    limits.memory: 4Gi

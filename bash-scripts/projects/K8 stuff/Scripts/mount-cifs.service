@@ -1,0 +1,16 @@
+# sudo vim /etc/systemd/system/mount-cifs.service
+# sudo systemctl daemon-reload
+# sudo systemctl enable mount-cifs.service
+
+# replace $YOURUSER with your username or change the script path
+
+[Unit]
+Description=Mount the CIFS share that requires VPN Connection
+After=zerotier-one.service
+
+[Service]
+Type=oneshot
+ExecStart=/home/$YOURUSER/bin/mount-cifs.sh
+
+[Install]
+WantedBy=multi-user.target

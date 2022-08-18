@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jamf-pro
+  namespace: jamf-pro
+  labels:
+    app: jamf-pro
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jamf-pro
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: jamf-pro
+    spec:
+      containers:
+        - env:
+            # Change to your MySQL requirenments
+            - name: DATABASE_HOST
+              value: "database.domain.net"
+            - name: DATABASE_NAME
+              value: "jamfsoftware"
+            - name: DATABASE_USERNAME
+              value: "jamfsoftware"
+            - name: DATABASE_PASSWORD
+              value: "changeit"
+            - name: DATABASE_PORT
+              value: "3306"
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          name: jamf-pro
+          image: jamf/jamfpro:latest
+          ports:
+            - containerPort: 8080
+              name: tomcat-web-svc
+          resources:
+            requests:
+              memory: "1000Mi"
+              cpu: "1000m"
+            limits:
+              memory: "4000Mi"
+              cpu: "4000m"
+          volumeMounts:
+            - name: webapp
+              mountPath: /data/ROOT.war
+      restartPolicy: Always
+      volumes:
+        - name: webapp
+          hostPath:
+            # Change to where you have your ROOT.war saved
+            path: /data/ROOT.war
