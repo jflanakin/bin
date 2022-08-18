@@ -16,7 +16,7 @@ main() {
 	else
 		USERNAME=""
 		echo "This script will install necessary software as well as create a user with sudo privileges or give your existing user sudo privileges."
-		read -s "What is your username? (If your user doesn't exist yet, what username would you like to use?)
+		read -s "What is your username? (If your user does not exist yet, what username would you like to use?)
 	" USERNAME
 		
 		install_essential
