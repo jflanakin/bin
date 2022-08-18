@@ -1,7 +1,7 @@
 #!/bin/bash
 # This project was built to learn how to use libraries in bash.
 # This project assumes Debian 11 and an Intel Based CPU or a hypervisor on an Intel based platform.
-# This prepares a server for nearly any general purpose use.
+# This prepares a server for nearly any general purpose use. 
 
 # set -e
 
