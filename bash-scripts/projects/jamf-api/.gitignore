@@ -1,0 +1,17 @@
+# ignore secrets directory
+secrets/
+
+# ignore any secrets
+*.pw
+
+# ignore logs
+logs
+*.log
+
+# The file containing environment variables 
+.env
+
+# Ignore IDE specific files
+.idea/
+.vscode/
+*.sw*

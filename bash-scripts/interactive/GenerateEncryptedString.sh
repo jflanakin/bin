@@ -34,8 +34,9 @@ DecryptString() {
 	fi
 }
 
-# Call main function
 main(){
 	GenerateEncryptedString
 	DecryptString
 }
+# Call main function
+main

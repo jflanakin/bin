@@ -5,7 +5,7 @@ read -p "Enter your Jamf Pro URL, including https:// : " jamfProURL
 read -p "Enter your Jamf Pro API account username: " jamfProUser
 read -sp "Enter your Jamf Pro API account password: " jamfProPass
 
-apiBasicPass=$( printf "$jamfProUser:$jamfProPass" | /usr/bin/iconv -t ISO-8859-1 | /usr/bin/base64 -i - )
+apiBasicPass=$( echo "$jamfProUser:$jamfProPass" | /usr/bin/iconv -t ISO-8859-1 | /usr/bin/base64 -i - )
 getToken=$( curl -L -X POST $jamfProURL/api/v1/auth/token --header "Authorization: Basic $apiBasicPass" )
 authToken=$(/usr/bin/plutil -extract token raw -o - - <<< "$getToken")
 
