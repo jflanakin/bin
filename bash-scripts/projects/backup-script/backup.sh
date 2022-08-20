@@ -8,7 +8,6 @@
 ########=Global Variables=########
 now="$(date +"%F_%H:%M:%S")"
 
-
 ########=Error Codes and Message Types=########
 <<error_codes
     Errors are set as exit statuses:
