@@ -2,5 +2,5 @@
 
 source functions.sh
 
-__get_api_token token
-echo $token
+__get_api_token
+echo $global_token

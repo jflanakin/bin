@@ -1,28 +1,32 @@
 #!/bin/bash
 
+global_token=""
+
 __get_api_token(){
     # Set local variables
-    local __authtoken="$1"
     local jamfProURL=$(cat .jss-url)
-    local jamfProUser="jss-api@rubyraccoon.net"
-    # local jamfProPass='#yKZx*KEu9wDPkg742WJ%r77Y9k&$ee2ZM#HqtT6e2Uxx8$^T23JAP@z#*AQ'
-    local jamfProPass="$(echo "${ENCRYPTED}" | /usr/bin/openssl enc -aes256 -d -a -A -S "${SALT}" -k "${K}")"
-    #read -p "Enter your Jamf Pro URL, including https:// : " jamfProURL
-    #read -p "Enter your Jamf Pro API account username: " jamfProUser
-    #read -sp "Enter your Jamf Pro API account password: " jamfProPass
+    local jamfProUser=$(cat .jss-user)
+    local secret=$(cat .secret)
+    local salt=$(cat .salt)
+    local key=$(cat .key)
+    local jamfProPass=$( echo "${secret}" | openssl enc -aes-256-cbc -md sha512 -a -A -d -S "${salt}" -k "${key}" )
 
     # Encode credentials and extract token from API call.
     local apiBasicPass=$( echo "$jamfProUser:$jamfProPass" | /usr/bin/iconv -t ISO-8859-1 | /usr/bin/base64 -i - )
-    local getToken=$( curl -L -X POST $jamfProURL/api/v1/auth/token --header "Authorization: Basic $apiBasicPass" )
+    local getToken=$( curl -s -L -X POST $jamfProURL/api/v1/auth/token --header "Authorization: Basic $apiBasicPass" )
     local authToken=$(/usr/bin/plutil -extract token raw -o - - <<< "$getToken")
-    eval $__authtoken="'$authToken'"
+    global_token=$authToken
 }
 
 __invalidate_token(){
-    curl -L -X POST $jamfProURL/api/v1/auth/invalidate-token --header "Authorization: Basic $apiBasicPass"
+    local authToken=$1
+    local jamfProURL=$(cat .jss-url)
+    curl -L -X POST $jamfProURL/api/v1/auth/invalidate-token --header "Authorization: Bearer $authToken"
 }
 
-__evaluate_user(){
-    local authtoken="$1"
+__get_api_token
 
-}
+echo $global_token
+
+__invalidate_token $global_token
+__invalidate_token $global_token

@@ -136,7 +136,7 @@ _DecryptString() {
 
 main(){
 	printf "This script generates an encrypted secret based on a string you provide. This is useful for encrypting passwords used in other scripts.\n"
-	printf "\nSome special characters will break this script, such as \\ and single or double quotes. Please be sure to verify that the encrypted string can be decrypted correctly before using it anywhere.\n"
+	printf "Some special characters will break this script, such as \\ and single or double quotes. Please be sure to verify that the encrypted string can be decrypted correctly before using it anywhere.\n"
 	_GenerateEncryptedString
 	_DecryptString
 }

@@ -8,3 +8,4 @@ logs
 # ignore trash folder
 trash/
 trash/**
+**/trash/**
