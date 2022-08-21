@@ -1,17 +1,30 @@
 #!/bin/bash
 
-exec 1> >(logger -s -t $(basename $0)) 2>&1
 
-echo "writing to stdout"
-echo "writing to stderr" >&2
+__if_exists(){
+    dir="$1"
 
-tail -f /var/log/system.log
+    if [[ -e $dir ]] || [[ $dir = "" ]]
+    then
+        echo "rururu"
+    else
+        echo "no rururu"
+    fi
+}
 
+__if_exists
 
-    local  __resultvar=$1
-    local  myresult='some value'
-    eval $__resultvar="'$myresult'"
+whoiam=$(whoami)
+echo $whoiam
 
+printf "rururu\n"
 
-myfunc result
-echo $result
+__save(){
+	local name=$1
+	local toSave=$2
+	local path=$3
+    printf "\n"
+	printf "${name} is saved.\n"
+}
+
+__save "penis vagina butthole"

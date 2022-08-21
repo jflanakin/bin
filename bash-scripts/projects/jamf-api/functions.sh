@@ -3,7 +3,7 @@
 __get_api_token(){
     # Set local variables
     local __authtoken="$1"
-    local jamfProURL="https://julyflanakin.jamfcloud.com"
+    local jamfProURL=$(cat .jss-url)
     local jamfProUser="jss-api@rubyraccoon.net"
     # local jamfProPass='#yKZx*KEu9wDPkg742WJ%r77Y9k&$ee2ZM#HqtT6e2Uxx8$^T23JAP@z#*AQ'
     local jamfProPass="$(echo "${ENCRYPTED}" | /usr/bin/openssl enc -aes256 -d -a -A -S "${SALT}" -k "${K}")"
