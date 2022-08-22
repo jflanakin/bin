@@ -4,3 +4,6 @@
 # ignore logs
 logs
 *.log
+
+# ignore okta token
+/okta-token
