@@ -1,10 +1,12 @@
 #!/bin/bash
 
+source templates.sh
+
 ########=Globale Variables=########
 global_token=""
 jamfProURL=$(cat .jss-url)
 
-########=Generate Authentication Details=########
+########=Authentication Flow=########
 _getApiToken(){
     # Set local variables
     local jamfProUser=$(cat .jss-user)
@@ -15,32 +17,22 @@ _getApiToken(){
 
     # Encode credentials and extract token from API call.
     local apiBasicPass=$( echo "$jamfProUser:$jamfProPass" | /usr/bin/iconv -t ISO-8859-1 | /usr/bin/base64 -i - )
-    local getToken=$( curl -L -X POST $jamfProURL/api/v1/auth/token -H "Authorization: Basic $apiBasicPass" )
+    local getToken=$( curl -s -k -L -X POST $jamfProURL/api/v1/auth/token -H "Authorization: Basic $apiBasicPass" )
     local authToken=$(/usr/bin/plutil -extract token raw -o - - <<< "$getToken")
     global_token=$authToken
 }
 
-########=User Info Generation=########
-_generateUserName(){
-    userName=$(curl https://frightanic.com/goodies_content/docker-names.php)
+_invalidateToken(){
+    curl -s -k -L -X POST $jamfProURL/api/v1/auth/invalidate-token -H "Authorization: Bearer $global_token"
 }
 
-_generateUserEmail(){
-    userEmail=raccoon_called_$userName@fake.rubyraccoon.net
-}
-
-_generateUserPhone(){
-    local fourNum=$(echo $((RANDOM % 9999 + 0)))
-    local threeNum=$(echo $((RANDOM % 999 + 0)))
-    phoneNumber=$"(${threeNum}) ${threenum}-${fourNum}"
-}
-
+########=Generate Objects=########
 _generateUsers(){
     _numberOfUsers
     local numUsers=""
     read -p "How many users would you like to create? (Max of 100 existing users + new users): " numUsers
     local totalUsers=$(($existingUsers + $numUsers))
-    if [[ "$numUsers" -gt -1 ]] && [[ "$numUsers" -lt 100 ]] && [[ "$existingUsers" -lt 100 ]] && [[ "$totalUsers" -le 100 ]]
+    if [[ "$numUsers" -gt 0 ]] && [[ "$numUsers" -lt 100 ]] && [[ "$existingUsers" -lt 100 ]] && [[ "$totalUsers" -le 100 ]]
     then
         until [[ $numUsers -eq 0 ]]
         do
@@ -53,47 +45,65 @@ _generateUsers(){
     fi
 }
 
-########=Computer Info Generation=########
-# Generates MAC address
-_generateMAC(){
-	clientMACValue1=$(openssl rand -hex 6)
-	clientMACValue2=$(openssl rand -hex 6)
+_generateComputers(){
+    local numComputers=""
+    read -p "How many computer objects would you like to create? (Max of 100 existing users + new users): " numComputers
+    if [[ "$numComputers" -gt 0 ]] && [[ "$numComputers" -lt 100 ]]
+    then
+        until [[ $numComputers -eq 0 ]]
+        do
+            _generateComputerTemplate
+            _createComputer
+            numComputers="$((numComputers - 1))"
+        done
+    else
+        printf "Invalid number of computers. Either there are too many computers already in Jamf Pro or you are trying to create too many computers at once. Please run this script again and enter a valid number of computers."
+    fi
 }
 
-########=Mobile Device Info Generation=########
-_generateBeans(){
-    echo "beans"
-}
-
-########=Request Templates=########
-_generateUserTemplate(){
-    _generateUserName
-    _generateUserEmail
-    _generateUserPhone
-    templateData="<user><name>${userName}</name><full_name>${userName}</full_name><email>${userEmail}</email><email_address>${userEmail}</email_address><phone_number>${phoneNumber}</phone_number><position>Raccoon</position></user>"
-}
-
-_generateComputerTemplate(){
-    # stuff
-    echo "rururu"
-}
-
-########=API Requests=########
-_invalidateToken(){
-    curl -L -X POST $jamfProURL/api/v1/auth/invalidate-token -H "Authorization: Bearer $global_token"
-}
-
+########=Classic API Functions=########
 _createUser(){
-    curl -L -k $jamfProURL/JSSResource/users/id/0 -H 'Accept: application/xml' -H 'Content-Type: application/xml' -H "Authorization: Bearer ${global_token}" -X POST -d "${templateData}"
+    curl -L -k $jamfProURL/JSSResource/users/id/0 -H 'Accept: application/xml' -H 'Content-Type: application/xml' -H "Authorization: Bearer ${global_token}" -X POST -d "${userTemplateData}"
+}
+
+_createComputer(){
+    curl -s -k -L -X $jamfProURL/JSSResource/computers/id/0 -H 'Accept: application/xml' -H 'Content-Type: application/xml' -H "Authorization: Bearer ${global_token}" -X POST -d "${computerTemplateData}"
 }
 
 _getUser(){
-    Users=$(curl -L -k "${jamfProURL}/JSSResource/users" -H "accept: text/xml" -H "Authorization: Bearer ${global_token}" | xmllint --format -)
+    Users=$(curl -s -k -L -X "${jamfProURL}/JSSResource/users" -H "accept: text/xml" -H "Authorization: Bearer ${global_token}" | xmllint --format -)
 }
 
 _numberOfUsers(){
-    existingUsers=$(curl -L -k ${jamfProURL}/JSSResource/users -H "accept: text/xml" -H "Authorization: Bearer ${global_token}" | xmllint --xpath '//users/size/text()' -)
+    existingUsers=$(curl -s -k -L -X ${jamfProURL}/JSSResource/users -H "accept: text/xml" -H "Authorization: Bearer ${global_token}" | xmllint --xpath '//users/size/text()' -)
 }
+
+########=Jamf API Functions=########
+
+_numberOfComputers(){
+    numComputers=$(curl -s -k -L -X GET "${jamfProURL}/api/v1/computers-inventory?section=GENERAL&page=0&page-size=10&sort=id%3Aasc" -H "accept: application/json" -H "Authorization: Bearer ${global_token}" | jq '.totalCount' )
+}
+
+_getComputerInventoryReport(){
+    _numberOfComputers
+    local totalComputers="$numComputers"
+    echo "The total number of computers is ${totalComputers}"
+    totalComputers="$((numComputers - 1))"
+    until [[ "$totalComputers" -eq -1 ]]
+    do
+        computerID="$(curl -s -k -L -X GET "${jamfProURL}/api/v1/computers-inventory?section=GENERAL&page=0&page-size=10&sort=id%3Aasc" -H "accept: application/json" -H "Authorization: Bearer ${global_token}" | jq ".results[${totalComputers}].id" )"
+
+        echo "The computer ID is ${computerID}"
+
+        computerInventoryReport=$(curl -s -k -L -X GET "${jamfProURL}/api/v1/computers-inventory-detail/${computerID}" -H "accept: application/json" -H "Authorization: Bearer ${global_token}" | jq '.general' )
+
+        echo "$computerInventoryReport"
+
+        totalComputers="$((totalComputers - 1))"
+    done
+}
+
+
 
 ########=Main Function=########
 <<Usage
@@ -101,9 +111,14 @@ _numberOfUsers(){
 Usage
 main(){
     _getApiToken
-    _numberOfUsers
-    echo $existingUsers
-    _generateUsers
+#    _generateComputers
+#    _numberOfUsers
+#    echo $existingUsers
+#    _generateUsers
+    _getComputerInventoryReport
+    #echo $computerInventoryReport
+
+
     _invalidateToken
 }
 
